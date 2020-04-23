@@ -15,7 +15,7 @@ def create_card(upvotes, downvotes, name, avatar_url):
     except Exception:
         upvote_percentage = 0
 
-    img = Image.open("cardAssets/template.png")
+    img = Image.open("karma_card/template.png")
     canvas = Image.new('RGBA', (700, 250), (0, 0, 0, 0))
     canvas.paste(img, (0, 0))
 
@@ -26,7 +26,7 @@ def create_card(upvotes, downvotes, name, avatar_url):
         green_x2 = red_x1+(bar_size[0]*upvote_percentage)
         rimg_draw.rectangle((red_x1, red_y1, green_x2, red_y2), "#70FF32")
 
-    img = Image.open("cardAssets/bar_overlay.png").convert("RGBA")
+    img = Image.open("karma_card/bar_overlay.png").convert("RGBA")
     canvas.paste(img, (0, 0), img)
 
     try:
@@ -37,7 +37,7 @@ def create_card(upvotes, downvotes, name, avatar_url):
     img = img.resize(size)
     canvas.paste(img, (15, 12))
 
-    img = Image.open("cardAssets/circle_overlay.png").convert("RGBA")
+    img = Image.open("karma_card/circle_overlay.png").convert("RGBA")
     canvas.paste(img, (0, 0), img)
 
 ###########################################################################
