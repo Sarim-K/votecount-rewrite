@@ -1,12 +1,16 @@
 import discord
 from discord import NotFound
 from discord.ext import commands
-import sqlite3
 from karma_card.createcard import create_card
+import sqlite3
+import help_cmds
+
+
+KEY = open("keys.txt", "r").readline().split("=")[1]
 
 debug_mode = False
-KEY = open("keys.txt", "r").readline().split("=")[1]
 bot = commands.Bot(command_prefix="$")
+bot.remove_command("help")
 
 conn = sqlite3.connect("votecount.db")
 c = conn.cursor()
@@ -40,19 +44,25 @@ async def on_guild_join(guild):
 
     for channel in guild.text_channels:
         if channel.permissions_for(guild.me).send_messages:
-            await channel.send("Hello! To get started, type out your desired reaction emotes as such:\n$setup <:upvote:452121917462151169> <:rt:451882250884218881> <:downvote:451890347761467402>\nIf you don't have an RT emote, just replace it with 'NONE')
+            await channel.send("Hello! To get started, type out your desired reaction emotes as such:\n$setup <:upvote:452121917462151169> <:rt:451882250884218881> <:downvote:451890347761467402>\nIf you don't have an RT emote, just replace it with 'NONE'")
             break
+
 
 @commands.has_permissions(administrator=True)
 @bot.command()
 async def debug(ctx):
-    status = ctx.message.content.split(" ")[1]
+    global debug_mode
+    try:
+        status = ctx.message.content.split(" ")[1]
+    except IndexError:
+        await ctx.message.channel.send(f"Debug mode is {debug_mode}")
     if status == "0":
         debug_mode = False
+        await ctx.message.channel.send("Debug mode disabled")
     elif status == "1":
         debug_mode = True
-    else:
-        await ctx.message.channel.send(f"Debug mode is"{debug_mode})
+        await ctx.message.channel.send("Debug mode enabled")
+
 
 @commands.has_permissions(administrator=True)
 @bot.command()
@@ -104,6 +114,7 @@ async def blacklist_remove(ctx):
         conn.commit()
         await ctx.message.channel.send("User has been removed from the blacklist.")
 
+
 @commands.has_permissions(administrator=True)
 @bot.command()
 async def blacklist_view(ctx):
@@ -120,11 +131,18 @@ async def blacklist_view(ctx):
     for user_id in user_data:
         user = await bot.fetch_user(user_id[0])
         message_string += f"{user.name}#{user.discriminator}\n"
-    
+
     try:
         await ctx.message.channel.send(message_string)
     except discord.errors.HTTPException:
         await ctx.message.channel.send("Blacklist is empty!")
+
+
+@bot.command()
+async def help(ctx):
+    embed = help_cmds.help(ctx.message.content.lower(), ctx.message)
+    await ctx.message.channel.send(embed=embed)
+
 
 @bot.command()
 async def karma(ctx):
@@ -192,6 +210,7 @@ async def on_raw_reaction_add(payload):
     user_data = c.execute(sql_query).fetchone()
     try:
         if user_data[5] == 1:
+            if debug_mode is True: print("USER IS BLACKLISTED.")
             return
     except TypeError:
         pass  # user doesnt exist in db, so cannot be in blacklist
@@ -262,7 +281,7 @@ async def on_raw_reaction_add(payload):
     conn.commit()
     if debug_mode is True: print("DATA UPDATED FOR MSG REACTOR")
 
-    if debug_mode is True: 
+    if debug_mode is True:
         sql_query = f"SELECT * FROM data_{msg.guild.id} WHERE USER_ID = {msg.author.id}"
         user_data = c.execute(sql_query).fetchone()
         print("AUTHOR DATA:", user_data)
@@ -296,6 +315,7 @@ async def on_raw_reaction_remove(payload):
     user_data = c.execute(sql_query).fetchone()
     try:
         if user_data[5] == 1:
+            if debug_mode is True: print("USER IS BLACKLISTED.")
             return
     except TypeError:
         pass  # user doesnt exist in db, so cannot be in blacklist
@@ -366,7 +386,7 @@ async def on_raw_reaction_remove(payload):
     conn.commit()
     if debug_mode is True: print("DATA UPDATED FOR MSG REACTOR")
 
-    if debug_mode is True: 
+    if debug_mode is True:
         sql_query = f"SELECT * FROM data_{msg.guild.id} WHERE USER_ID = {msg.author.id}"
         user_data = c.execute(sql_query).fetchone()
         print("AUTHOR DATA:", user_data)
