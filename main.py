@@ -220,7 +220,7 @@ async def on_raw_reaction_add(payload):
     server_emotes = c.execute(sql_query).fetchone()
     if str(payload.emoji) == server_emotes[0] or str(payload.emoji) == server_emotes[1]:
         upvoted = 1
-    elif payload.emoji == server_emotes[2]:
+    elif str(payload.emoji) == server_emotes[2]:
         downvoted = 1
     else:
         if debug_mode is True: print("SERVER EMOTES:", server_emotes, type(server_emotes[1]))
@@ -325,7 +325,7 @@ async def on_raw_reaction_remove(payload):
     server_emotes = c.execute(sql_query).fetchone()
     if str(payload.emoji) == server_emotes[0] or str(payload.emoji) == server_emotes[1]:
         upvoted = 1
-    elif payload.emoji == server_emotes[2]:
+    elif str(payload.emoji) == server_emotes[2]:
         downvoted = 1
     else:
         if debug_mode is True: print("SERVER EMOTES:", server_emotes, type(server_emotes[1]))
