@@ -161,7 +161,7 @@ async def karma(ctx):
     if user_data is None:
         user_data = [0, 0, 0]
 
-    create_card(user_data[1], user_data[2], username, avatar)
+    create_card(user_data[1], user_data[2], username, avatar, "karma")
     await ctx.message.channel.send(file=discord.File("card.png"))
 
 
@@ -182,7 +182,7 @@ async def given(ctx):
     if user_data is None:
         user_data = [0, 0, 0, 0, 0, 0]
 
-    create_card(user_data[3], user_data[4], username, avatar)
+    create_card(user_data[3], user_data[4], username, avatar, "given")
     await ctx.message.channel.send(file=discord.File("card.png"))
 
 
