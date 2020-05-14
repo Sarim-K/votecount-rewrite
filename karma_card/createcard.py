@@ -1,7 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import requests
 
-
 def create_card(upvotes, downvotes, name, avatar, template, colour):
     upvotes, downvotes = int(upvotes), int(downvotes)
     if colour == "light":
@@ -20,6 +19,8 @@ def create_card(upvotes, downvotes, name, avatar, template, colour):
         upvote_percentage = 0
 
     canvas = Image.new('RGBA', (700, 250), (0, 0, 0, 0))
+    mask = Image.open("karma_card/mask.png")
+    template = Image.open(f"karma_card/templates/{template}_template.png").convert("RGBA")
 
     try:
         img = Image.open(requests.get(avatar, stream=True).raw)
@@ -29,8 +30,7 @@ def create_card(upvotes, downvotes, name, avatar, template, colour):
     img = img.resize(size)
     canvas.paste(img, (15, 12))
 
-    img = Image.open(f"karma_card/templates/{template}_template.png").convert("RGBA")
-    canvas.paste(img, (0, 0), img)
+    canvas = Image.composite(template, canvas, mask)
 
     rimg_draw = ImageDraw.Draw(canvas)
     rimg_draw.rectangle((red_x1, red_y1, red_x2, red_y2), "#FF463D")
