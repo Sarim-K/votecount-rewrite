@@ -32,11 +32,10 @@ def help(usermessage, message, img=None):
 		help_message = createHelpMessage("view how much karma a user's given", "$given or $given @user", 1)	
 
 	elif usermessage == "$help customise":
-		img = discord.File("karma_card/help.png")
-		help_message = createHelpMessage("$customise [karma/given] [template name] [dark/light]", "$customise karma blacksea dark", 1)
+		help_message = createHelpMessage("$customise [karma/given] [template name] [dark/light]", "templates: https://imgur.com/a/FpmGsQR", 1)
 
 	else:  # catch-all help command
-		help_message = createHelpMessage("commands:", "$setup\n$debug\n$blacklist_add\n$blacklist_remove\n$blacklist_view\n\n$karma\n$given\ncustomise", 1)
+		help_message = createHelpMessage("commands:", "$setup\n$debug\n$blacklist_add\n$blacklist_remove\n$blacklist_view\n\n$karma\n$given\n$customise", 1)
 
 	embed = discord.Embed(title=help_message.title, description=help_message.description, color=help_message.colour)
 	embed.set_author(name=message.author, icon_url=message.author.avatar_url)
