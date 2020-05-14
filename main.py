@@ -152,9 +152,9 @@ async def blacklist_view(ctx):
 @bot.command()
 async def customise(ctx):
     if len(ctx.message.content.split(" ")) == 4:
-        card_type = ctx.message.content.split(" ")[1]
-        template_name = ctx.message.content.split(" ")[2]
-        dark_light = ctx.message.content.split(" ")[3]
+        card_type = ctx.message.content.split(" ")[1].lower()
+        template_name = ctx.message.content.split(" ")[2].lower()
+        dark_light = ctx.message.content.split(" ")[3].lower()
 
         if card_type != "karma" and card_type != "given":
             await ctx.message.channel.send("Incorrect card type.")
