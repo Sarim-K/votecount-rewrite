@@ -55,7 +55,7 @@ async def on_guild_join(guild):
 
     for channel in guild.text_channels:
         if channel.permissions_for(guild.me).send_messages:
-            await channel.send("Hello! To get started, type out your desired reaction emotes as such:\n$setup <:upvote:452121917462151169> <:rt:451882250884218881> <:downvote:451890347761467402>\nIf you don't have an RT emote, just replace it with 'NONE'")
+            await channel.send("Hello! To get started, type out your desired reaction emotes as such:\n$setup <:upvote:452121917462151169> <:downvote:451890347761467402> <:rt:451882250884218881>\nIf you don't have an RT emote, just replace it with 'NONE'")
             break
 
 
