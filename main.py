@@ -205,6 +205,7 @@ async def customise(ctx):
             c.execute(sql_query)
             conn.commit()
 
+    await ctx.message.channel.send(f"Your {card_type} card now has the '{template_name}' image with {dark_light} text.")
 
 @bot.command()
 async def help(ctx):
