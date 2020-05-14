@@ -14,6 +14,18 @@ bot.remove_command("help")
 
 conn = sqlite3.connect("votecount.db")
 c = conn.cursor()
+print("Database initialised")
+
+sql_query = f"""
+CREATE TABLE IF NOT EXISTS user_data (
+USER_ID         INTEGER (0, 18),
+KARMA_TEMPLATE  TEXT    (0, 20),
+KARMA_COLOUR    TEXT    (0, 5),
+GIVEN_TEMPLATE  TEXT    (0, 20),
+GIVEN_COLOUR    TEXT    (0, 5)
+);"""
+c.execute(sql_query)
+print("Table: user_data check completed")
 
 
 @bot.event
@@ -139,9 +151,73 @@ async def blacklist_view(ctx):
 
 
 @bot.command()
+async def customise(ctx):
+    if len(ctx.message.content.split(" ")) == 1:
+        embed, img = help_cmds.help("$help customise", ctx.message)
+        await ctx.message.channel.send(embed=embed, file=img)
+        return
+
+    elif len(ctx.message.content.split(" ")) == 4:
+        card_type = ctx.message.content.split(" ")[1]
+        template_name = ctx.message.content.split(" ")[2]
+        dark_light = ctx.message.content.split(" ")[3]
+
+        if card_type != "karma" and card_type != "given":
+            await ctx.message.channel.send("Incorrect card type.")
+            return
+        elif dark_light != "dark" and dark_light != "light":
+            await ctx.message.channel.send("Incorrect colour type.")
+            return
+    else:
+        await ctx.message.channel.send("Incorrect syntax.")
+        return
+
+    sql_query = f"SELECT * FROM user_data WHERE USER_ID = {ctx.message.author.id}"
+    user_data = c.execute(sql_query).fetchone()
+
+    if user_data is None:
+        if card_type == "karma":
+            sql_query = f"""INSERT INTO user_data
+                        (USER_ID, KARMA_TEMPLATE, KARMA_COLOUR, GIVEN_TEMPLATE, GIVEN_COLOUR)
+                        VALUES ({ctx.message.author.id}, "{template_name}", "{dark_light}", "space", "light"
+                        );"""
+            c.execute(sql_query)
+            conn.commit()
+
+        elif card_type == "given":
+            sql_query = f"""INSERT INTO user_data
+                        (USER_ID, KARMA_TEMPLATE, KARMA_COLOUR, GIVEN_TEMPLATE, GIVEN_COLOUR)
+                        VALUES ({msg.author.id}, "blacksea", "dark", "{template_name}", "{dark_light}"
+                        );"""
+            c.execute(sql_query)
+            conn.commit()
+    else:
+        if card_type == "karma":
+            sql_query = f"""UPDATE user_data
+                        SET KARMA_TEMPLATE = "{template_name}",
+                            KARMA_COLOUR = "{dark_light}"
+                        WHERE USER_ID = {ctx.message.author.id}
+            """
+            c.execute(sql_query)
+            conn.commit()
+        
+        elif card_type == "given":
+            sql_query = f"""UPDATE user_data
+                        SET GIVEN_TEMPLATE = "{template_name}",
+                            GIVEN_COLOUR = "{dark_light}"
+                        WHERE USER_ID = {ctx.message.author.id}
+            """
+            c.execute(sql_query)
+            conn.commit()
+
+
+@bot.command()
 async def help(ctx):
-    embed = help_cmds.help(ctx.message.content.lower(), ctx.message)
-    await ctx.message.channel.send(embed=embed)
+    embed, img = help_cmds.help(ctx.message.content.lower(), ctx.message)
+    if img is None:
+        await ctx.message.channel.send(embed=embed)
+    else:
+        await ctx.message.channel.send(embed=embed, file=img)
 
 
 @bot.command()
@@ -156,12 +232,19 @@ async def karma(ctx):
         username = user.name
         avatar = user.avatar_url
 
+    sql_query = f"SELECT KARMA_TEMPLATE, KARMA_COLOUR FROM user_data WHERE USER_ID = {user_id}"
+    karma_template, karma_colour = c.execute(sql_query).fetchone()
+    if karma_template is None:
+        karma_template, karma_colour = "space", "light"
     sql_query = f"SELECT * FROM data_{ctx.message.guild.id} WHERE USER_ID = {user_id}"
     user_data = c.execute(sql_query).fetchone()
     if user_data is None:
         user_data = [0, 0, 0]
 
-    create_card(user_data[1], user_data[2], username, avatar, "karma")
+    print(user_data)
+    print(karma_template, karma_colour)
+
+    create_card(user_data[1], user_data[2], username, avatar, karma_template, karma_colour)
     await ctx.message.channel.send(file=discord.File("card.png"))
 
 
@@ -177,12 +260,20 @@ async def given(ctx):
         username = user.name
         avatar = user.avatar_url
 
+    sql_query = f"SELECT GIVEN_TEMPLATE, GIVEN_COLOUR FROM user_data WHERE USER_ID = {user_id}"
+    given_template, given_colour = c.execute(sql_query).fetchone()
+    if given_template is None:
+        given_template, given_colour = "blacksea", "dark"
+
     sql_query = f"SELECT * FROM data_{ctx.message.guild.id} WHERE USER_ID = {user_id}"
     user_data = c.execute(sql_query).fetchone()
     if user_data is None:
-        user_data = [0, 0, 0, 0, 0, 0]
+        user_data = [0, 0, 0, 0, 0]
 
-    create_card(user_data[3], user_data[4], username, avatar, "given")
+    print(user_data)
+    print(karma_template, karma_colour)
+
+    create_card(user_data[3], user_data[4], username, avatar, given_template, given_colour)
     await ctx.message.channel.send(file=discord.File("card.png"))
 
 
