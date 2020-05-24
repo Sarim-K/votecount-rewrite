@@ -59,7 +59,7 @@ async def on_guild_join(guild):
             break
 
 
-@commands.has_permissions(administrator=True)
+@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 @bot.command()
 async def debug(ctx):
     global debug_mode
@@ -75,7 +75,7 @@ async def debug(ctx):
         await ctx.message.channel.send("Debug mode enabled")
 
 
-@commands.has_permissions(administrator=True)
+@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 @bot.command()
 async def setup(ctx):
     upvote_id = ctx.message.content.split(" ")[1]
@@ -96,7 +96,7 @@ async def setup(ctx):
     await ctx.message.channel.send("Your reaction emotes have successfully been set!")
 
 
-@commands.has_permissions(administrator=True)
+@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 @bot.command()
 async def blacklist_add(ctx):
     if len(ctx.message.content.split(" ")) == 2:
@@ -111,7 +111,7 @@ async def blacklist_add(ctx):
         await ctx.message.channel.send("User has been added to the blacklist.")
 
 
-@commands.has_permissions(administrator=True)
+@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 @bot.command()
 async def blacklist_remove(ctx):
     if len(ctx.message.content.split(" ")) == 2:
@@ -126,7 +126,7 @@ async def blacklist_remove(ctx):
         await ctx.message.channel.send("User has been removed from the blacklist.")
 
 
-@commands.has_permissions(administrator=True)
+@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
 @bot.command()
 async def blacklist_view(ctx):
     message_string = ""
