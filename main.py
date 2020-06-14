@@ -4,6 +4,7 @@ from discord.ext import commands
 from karma_card.createcard import create_card
 import sqlite3
 import help_cmds
+import operator
 
 
 KEY = open("keys.txt", "r").readline().split("=")[1]
@@ -273,6 +274,129 @@ async def given(ctx):
 
     create_card(user_data[3], user_data[4], username, avatar, given_template, given_colour)
     await ctx.message.channel.send(file=discord.File("card.png"))
+
+
+@bot.command()
+async def top_karma(ctx):
+    try:
+        total = int(ctx.message.content.split(" ")[1])
+    except(IndexError, ValueError):
+        total = 10
+
+    newlist = []
+    finalstring = ""
+    count = 0
+
+    sql_query = f"SELECT * FROM data_{ctx.message.guild.id}"
+    user_data = c.execute(sql_query).fetchall()
+
+    for user in user_data:
+        newlist.append([user[0], user[1]-user[2]])
+
+    user_data = sorted(newlist, key=operator.itemgetter(1))
+    user_data.reverse()
+
+    for user in user_data:
+        if count == total:
+            break
+
+        try:
+            user_object = ctx.message.guild.get_member(user[0])
+            finalstring += f"{user_object.name}#{user_object.discriminator} - {user[1]}\n"
+        except AttributeError:
+            finalstring += f"<@{user[0]}> - {user[1]}\n"
+        finally:
+            count += 1
+
+    try:
+        if total > 15:
+            await ctx.message.author.send(finalstring)
+        else:
+            await ctx.message.channel.send(finalstring)
+    except discord.HTTPException as e:
+        await ctx.message.channel.send(f"Error!\n`{e}`")
+
+
+
+@bot.command()
+async def top_given(ctx):
+    try:
+        total = int(ctx.message.content.split(" ")[1])
+    except(IndexError, ValueError):
+        total = 10
+
+    newlist = []
+    finalstring = ""
+    count = 0
+
+    sql_query = f"SELECT * FROM data_{ctx.message.guild.id}"
+    user_data = c.execute(sql_query).fetchall()
+    
+    for user in user_data:
+        newlist.append([user[0], user[3]-user[4]])
+
+    user_data = sorted(newlist, key=operator.itemgetter(1))
+    user_data.reverse()
+
+    for user in user_data:
+        if count == total:
+            break
+        
+        try:
+            user_object = ctx.message.guild.get_member(user[0])
+            finalstring += f"{user_object.name}#{user_object.discriminator} - {user[1]}\n"
+        except AttributeError:
+            finalstring += f"<@{user[0]}> - {user[1]}\n"
+        finally:
+            count += 1
+
+    try:
+        if total > 15:
+            await ctx.message.author.send(finalstring)
+        else:
+            await ctx.message.channel.send(finalstring)
+    except discord.HTTPException as e:
+        await ctx.message.channel.send(f"Error!\n`{e}`")
+
+
+
+@commands.is_owner()
+@bot.command()
+async def set_karma(ctx):
+    print(len(ctx.message.content.split(" ")))
+    if len(ctx.message.content.split(" ")) == "3":
+        user_id = ctx.message.content.split(" ")[1].replace("<@", "").replace(">", "").replace("!", "")
+        UPVOTES, DOWNVOTES = ctx.message.content.split(" ")[2].split("|")
+
+        sql_query = f"""UPDATE data_{ctx.message.guild.id}
+                    SET UPVOTES = {UPVOTES},
+                    DOWNVOTES = {DOWNVOTES}
+                    WHERE USER_ID = {ctx.message.author.id}
+                    """
+        c.execute(sql_query)
+        conn.commit()
+
+        user = ctx.message.guild.get_member(user_id)
+        await ctx.message.channel.send(f"{user.name}#{user.discriminator}'s karma has been set to {UPVOTES}|{DOWNVOTES}.")
+
+
+@commands.is_owner()
+@bot.command()
+async def set_given(ctx):
+    if len(ctx.message.content.split(" ")) == "3":
+        user_id = ctx.message.content.split(" ")[1].replace("<@", "").replace(">", "").replace("!", "")
+        UPVOTES_GIVEN, DOWNVOTES_GIVEN = ctx.message.content.split(" ")[2].split("|")
+
+        sql_query = f"""UPDATE data_{ctx.message.guild.id}
+                    SET UPVOTES_GIVEN = {UPVOTES_GIVEN},
+                    DOWNVOTES_GIVEN = {DOWNVOTES_GIVEN}
+                    WHERE USER_ID = {ctx.message.author.id}
+                    """
+        c.execute(sql_query)
+        conn.commit()
+
+        user = ctx.message.guild.get_member(user_id)
+        await ctx.message.channel.send(f"{user.name}#{user.discriminator}'s given has been set to {upvotes}|{downvotes}.")
 
 
 @bot.event
