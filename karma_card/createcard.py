@@ -20,7 +20,10 @@ def create_card(upvotes, downvotes, name, avatar, template, colour):
 
     canvas = Image.new('RGBA', (700, 250), (0, 0, 0, 0))
     mask = Image.open("karma_card/mask.png")
-    template = Image.open(f"karma_card/templates/{template}_template.png").convert("RGBA")
+    try:
+        template = Image.open(f"karma_card/templates/{template}_template.png").convert("RGBA")
+    except FileNotFoundError:
+        template = Image.open(f"karma_card/templates/rocky_template.png").convert("RGBA")
 
     try:
         img = Image.open(requests.get(avatar, stream=True).raw)
