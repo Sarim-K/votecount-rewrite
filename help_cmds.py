@@ -16,6 +16,9 @@ def help(usermessage, message, img=None):
 	elif usermessage == "$help debug":
 		help_message = createHelpMessage("ADMIN ONLY: enables printing to console", "$debug / $debug 0 / $debug 1", 1)
 
+	elif usermessage == "$help set_timelimit":
+		help_message = createHelpMessage("ADMIN ONLY: set a time limit in which messages can have a counted vote", "`$set_timelimit 3600` - units are in seconds.", 1)
+
 	elif usermessage == "$help blacklist_add":
 		help_message = createHelpMessage("ADMIN ONLY: adds a user to the blacklist; their votes won't be counted", "$blacklist_add @user", 1)
 
@@ -31,11 +34,14 @@ def help(usermessage, message, img=None):
 	elif usermessage == "$help given":
 		help_message = createHelpMessage("view how much karma a user's given", "$given or $given @user", 1)	
 
+	elif usermessage == "$help top_karma" or usermessage == "$help top_given":
+		help_message = createHelpMessage("Shows the top users in the server", "`$top_karma` `$top_given`", 1)	
+
 	elif usermessage == "$help customise":
 		help_message = createHelpMessage("$customise [karma/given] [template name] [dark/light]", "templates: https://imgur.com/a/FpmGsQR", 1)
 
 	else:  # catch-all help command
-		help_message = createHelpMessage("commands:", "$setup\n$debug\n$blacklist_add\n$blacklist_remove\n$blacklist_view\n\n$karma\n$given\n$customise", 1)
+		help_message = createHelpMessage("commands:", "$setup\n$debug\n$set_timelimit\n$blacklist_add\n$blacklist_remove\n$blacklist_view\n\n$karma\n$given\n$top_karma\n$top_given\n$customise", 1)
 
 	embed = discord.Embed(title=help_message.title, description=help_message.description, color=help_message.colour)
 	embed.set_author(name=message.author, icon_url=message.author.avatar_url)
