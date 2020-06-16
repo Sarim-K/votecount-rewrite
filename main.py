@@ -5,6 +5,7 @@ from karma_card.createcard import create_card
 import sqlite3
 import help_cmds
 import operator
+import datetime
 
 
 KEY = open("keys.txt", "r").readline().split("=")[1]
@@ -50,7 +51,8 @@ async def on_guild_join(guild):
     CREATE TABLE IF NOT EXISTS settings_{guild.id} (
     UPVOTE_ID   STRING (0, 56),
     RT_ID   STRING (0, 56),
-    DOWNVOTE_ID STRING (0, 56)
+    DOWNVOTE_ID STRING (0, 56),
+    TIMELIMIT INTEGER
     );"""
     c.execute(sql_query)
 
@@ -149,6 +151,18 @@ async def blacklist_view(ctx):
     except discord.errors.HTTPException:
         await ctx.message.channel.send("Blacklist is empty!")
 
+
+@commands.check_any(commands.has_permissions(administrator=True), commands.is_owner())
+@bot.command()
+async def set_timelimit(ctx):
+    time_limit = ctx.message.content.split(" ")[1]
+    sql_query = f"""UPDATE settings_{ctx.message.guild.id}
+                    SET TIMELIMIT = "{time_limit}"
+                """
+    c.execute(sql_query)
+    conn.commit()  
+
+    await ctx.message.channel.send(f"The bot will now only count reactions for messages that are {time_limit} seconds old or less.")
 
 @bot.command()
 async def customise(ctx):
@@ -383,20 +397,7 @@ async def set_karma(ctx):
 @commands.is_owner()
 @bot.command()
 async def set_given(ctx):
-    if len(ctx.message.content.split(" ")) == "3":
-        user_id = ctx.message.content.split(" ")[1].replace("<@", "").replace(">", "").replace("!", "")
-        UPVOTES_GIVEN, DOWNVOTES_GIVEN = ctx.message.content.split(" ")[2].split("|")
-
-        sql_query = f"""UPDATE data_{ctx.message.guild.id}
-                    SET UPVOTES_GIVEN = {UPVOTES_GIVEN},
-                    DOWNVOTES_GIVEN = {DOWNVOTES_GIVEN}
-                    WHERE USER_ID = {ctx.message.author.id}
-                    """
-        c.execute(sql_query)
-        conn.commit()
-
-        user = ctx.message.guild.get_member(user_id)
-        await ctx.message.channel.send(f"{user.name}#{user.discriminator}'s given has been set to {upvotes}|{downvotes}.")
+    pass
 
 
 @bot.event
@@ -412,6 +413,22 @@ async def on_raw_reaction_add(payload):
         if debug_mode is True: print(f"Unknown error.\n{e}")
         return
     if debug_mode is True: print("Message fetched.")
+
+    # checks to see if the message fits the time constraint set by server owner
+    message_time = msg.created_at.timestamp()
+    current_time = datetime.datetime.utcnow().timestamp()
+
+    sql_query = f"SELECT TIMELIMIT FROM settings_{payload.guild_id}"
+    time_limit = c.execute(sql_query).fetchone()[0]
+    if time_limit != int:
+        if debug_mode is True: print("No time limit.")
+        pass
+    elif current_time - message_time > time_limit:
+        if debug_mode is True: print("Exceeds time limit.")
+        return
+    else:
+        if debug_mode is True: print("Passed time limit checks.")
+        pass
 
     # checks to see if it's a reaction on their own message
     if payload.user_id == msg.author.id:
@@ -517,6 +534,22 @@ async def on_raw_reaction_remove(payload):
         if debug_mode is True: print(f"Unknown error.\n{e}")
         return
     if debug_mode is True: print("Message fetched.")
+
+    # checks to see if the message fits the time constraint set by server owner
+    message_time = msg.created_at.timestamp()
+    current_time = datetime.datetime.utcnow().timestamp()
+
+    sql_query = f"SELECT TIMELIMIT FROM settings_{payload.guild_id}"
+    time_limit = c.execute(sql_query).fetchone()[0]
+    if time_limit is None:
+        if debug_mode is True: print("No time limit.")
+        pass
+    elif current_time - message_time > time_limit:
+        print(current_time-message_time)
+        if debug_mode is True: print("Exceeds time limit.")
+        return
+    else:
+        pass
 
     # checks to see if it's a reaction on their own message
     if payload.user_id == msg.author.id:
