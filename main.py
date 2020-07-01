@@ -765,16 +765,16 @@ async def on_raw_reaction_remove(payload):
     # update reactor's data, now that it definitely exists
     sql_query = f"""
     UPDATE data_{msg.guild.id}
-    SET UPVOTES = UPVOTES - ?,
-        DOWNVOTES = DOWNVOTES - ?
+    SET UPVOTES = UPVOTES_GIVEN - ?,
+        DOWNVOTES = DOWNVOTES_GIVEN - ?
     WHERE USER_ID = {payload.user_id}
     """
     c.execute(sql_query, (upvoted, downvoted))
 
     sql_query = f"""
     UPDATE '{msg.guild.id}_{payload.user_id}'
-    SET UPVOTES = UPVOTES - ?,
-        DOWNVOTES = DOWNVOTES - ?
+    SET UPVOTES = UPVOTES_GIVEN - ?,
+        DOWNVOTES = DOWNVOTES_GIVEN - ?
     WHERE USER_ID = {msg.author.id}
     """
     c.execute(sql_query, (upvoted, downvoted))
