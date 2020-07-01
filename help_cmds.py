@@ -35,7 +35,7 @@ def help(usermessage, message, img=None):
 		help_message = createHelpMessage("view how much karma a user's given", "$given or $given @user", 1)	
 
 	elif usermessage == "$help top_karma" or usermessage == "$help top_given":
-		help_message = createHelpMessage("Shows the top users in the server", "`$top_karma` `$top_given`", 1)	
+		help_message = createHelpMessage("Shows the top users in the server", "optional parameters: `@user` `num of results`", 1)	
 
 	elif usermessage == "$help customise":
 		help_message = createHelpMessage("$customise [karma/given] [template name] [dark/light]", "templates: https://imgur.com/a/FpmGsQR", 1)
