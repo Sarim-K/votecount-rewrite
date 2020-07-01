@@ -517,7 +517,7 @@ async def on_raw_reaction_add(payload):
     if user_data is None:
         sql_query = f"""INSERT OR REPLACE INTO '{msg.guild.id}_{msg.author.id}'
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN)
-                    VALUES (?, 0, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0,
                     );"""
         c.execute(sql_query, (payload.user_id,))
         conn.commit()            
@@ -703,7 +703,7 @@ async def on_raw_reaction_remove(payload):
     if user_data is None:
         sql_query = f"""INSERT OR REPLACE INTO '{msg.guild.id}_{msg.author.id}'
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN)
-                    VALUES (?, 0, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0,
                     );"""
         c.execute(sql_query, (payload.user_id,))
         conn.commit()            
