@@ -355,7 +355,7 @@ async def top_karma(ctx):
 @bot.command()
 async def top_given(ctx):
     newlist = []
-    finalstring = "```glsl\n"
+    finalstring = ""
     count = 0
     total = 10
     message_content = ctx.message.content
@@ -582,7 +582,7 @@ async def on_raw_reaction_add(payload):
     UPDATE '{msg.guild.id}_{payload.user_id}'
     SET UPVOTES = UPVOTES + ?,
         DOWNVOTES = DOWNVOTES + ?
-    WHERE USER_ID = {msg.author.id,}
+    WHERE USER_ID = {msg.author.id}
     """
     c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
@@ -768,7 +768,7 @@ async def on_raw_reaction_remove(payload):
     UPDATE '{msg.guild.id}_{payload.user_id}'
     SET UPVOTES = UPVOTES - ?,
         DOWNVOTES = DOWNVOTES - ?
-    WHERE USER_ID = {msg.author.id,}
+    WHERE USER_ID = {msg.author.id}
     """
     c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
