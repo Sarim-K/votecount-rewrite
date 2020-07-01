@@ -2,6 +2,7 @@ import discord
 from discord import NotFound
 from discord.ext import commands
 from karma_card.createcard import create_card
+from tabulate import tabulate
 import sqlite3
 import help_cmds
 import operator
@@ -295,6 +296,7 @@ async def given(ctx):
 @bot.command()
 async def top_karma(ctx):
     newlist = []
+    final = []
     finalstring = ""
     count = 0
     total = 10
@@ -333,11 +335,13 @@ async def top_karma(ctx):
 
         try:
             user_object = ctx.message.guild.get_member(user[0])
-            finalstring += f"{user[2]}|{user[3]} ({user[1]}) - {user_object.name}\n"
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name])
         except AttributeError:
-            finalstring += f"{user[2]}|{user[3]} ({user[1]} - <@{user[0]}>)\n"
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>"])            
         finally:
             count += 1
+
+    finalstring = tabulate(final)
 
     if len(finalstring) != 0:
         finalstring = "```glsl\n" + finalstring
@@ -355,6 +359,7 @@ async def top_karma(ctx):
 @bot.command()
 async def top_given(ctx):
     newlist = []
+    final = []
     finalstring = ""
     count = 0
     total = 10
@@ -394,11 +399,13 @@ async def top_given(ctx):
 
         try:
             user_object = ctx.message.guild.get_member(user[0])
-            finalstring += f"{user[2]}|{user[3]} ({user[1]}) - {user_object.name}\n"
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name])
         except AttributeError:
-            finalstring += f"{user[2]}|{user[3]} ({user[1]} - <@{user[0]}>)\n"
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>"])            
         finally:
             count += 1
+
+    finalstring = tabulate(final)
 
     if len(finalstring) != 0:
         finalstring = "```glsl\n" + finalstring
