@@ -506,9 +506,9 @@ async def on_raw_reaction_add(payload):
     if user_data is None:   # from data_{guild.id}
         sql_query = f"""INSERT OR REPLACE INTO data_{msg.guild.id}
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN, BLACKLISTED)
-                    VALUES ({msg.author.id}, 0, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (msg.author.id,))
         conn.commit()
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR IN DATA_msg.guild.id")
 
@@ -517,29 +517,29 @@ async def on_raw_reaction_add(payload):
     if user_data is None:
         sql_query = f"""INSERT OR REPLACE INTO '{msg.guild.id}_{msg.author.id}'
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN)
-                    VALUES ({payload.user_id}, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (payload.user_id,))
         conn.commit()            
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR")
 
     # update author's data, now that it definitely exists
     sql_query = f"""
     UPDATE data_{payload.guild_id}
-    SET UPVOTES = UPVOTES + {upvoted},
-        DOWNVOTES = DOWNVOTES + {downvoted}
+    SET UPVOTES = UPVOTES + ?,
+        DOWNVOTES = DOWNVOTES + ?
     WHERE USER_ID = {msg.author.id}
     """
-    c.execute(sql_query)
+    c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
 
     sql_query = f"""
     UPDATE '{msg.guild.id}_{msg.author.id}'
-    SET UPVOTES = UPVOTES + {upvoted},
-        DOWNVOTES = DOWNVOTES + {downvoted}
+    SET UPVOTES = UPVOTES + ?,
+        DOWNVOTES = DOWNVOTES + ?
     WHERE USER_ID = {payload.user_id}
     """
-    c.execute(sql_query)
+    c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
 
     if debug_mode is True: print("DATA UPDATED FOR MSG AUTHOR")
@@ -552,9 +552,9 @@ async def on_raw_reaction_add(payload):
     if user_data is None:   # from data_{guild.id}
         sql_query = f"""INSERT OR REPLACE INTO data_{msg.guild.id}
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN, BLACKLISTED)
-                    VALUES ({payload.user_id}, 0, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (payload.user_id,))
         conn.commit()
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR IN DATA_msg.guild.id")
 
@@ -563,29 +563,28 @@ async def on_raw_reaction_add(payload):
     if user_data is None:
         sql_query = f"""INSERT OR REPLACE INTO '{msg.guild.id}_{payload.user_id}'
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN)
-                    VALUES ({msg.author.id}, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (msg.author.id,))
         conn.commit()            
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR")
 
     # update reactor's data, now that it definitely exists
     sql_query = f"""
     UPDATE data_{msg.guild.id}
-    SET UPVOTES_GIVEN = UPVOTES_GIVEN + {upvoted},
-        DOWNVOTES_GIVEN = DOWNVOTES_GIVEN + {downvoted}
+    SET UPVOTES = UPVOTES + ?,
+        DOWNVOTES = DOWNVOTES + ?
     WHERE USER_ID = {payload.user_id}
     """
-    c.execute(sql_query)
-    conn.commit()
+    c.execute(sql_query, (upvoted, downvoted))
 
     sql_query = f"""
     UPDATE '{msg.guild.id}_{payload.user_id}'
-    SET UPVOTES_GIVEN = UPVOTES_GIVEN + {upvoted},
-        DOWNVOTES_GIVEN = DOWNVOTES_GIVEN + {downvoted}
-    WHERE USER_ID = {msg.author.id}
+    SET UPVOTES = UPVOTES + ?,
+        DOWNVOTES = DOWNVOTES + ?
+    WHERE USER_ID = {msg.author.id,}
     """
-    c.execute(sql_query)
+    c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
 
     # debug
@@ -646,7 +645,7 @@ async def on_raw_reaction_remove(payload):
     except TypeError:
         pass  # user doesnt exist in db, so cannot be in blacklist
 
-    # gets server emotes and decides if it was an upvote or downvote    
+    # gets server emotes and decides if it was an upvote or downvote
     sql_query = f"SELECT * FROM settings_{payload.guild_id}"
     server_emotes = c.execute(sql_query).fetchone()
     if str(payload.emoji) == server_emotes[0] or str(payload.emoji) == server_emotes[1]:
@@ -693,9 +692,9 @@ async def on_raw_reaction_remove(payload):
     if user_data is None:   # from data_{guild.id}
         sql_query = f"""INSERT OR REPLACE INTO data_{msg.guild.id}
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN, BLACKLISTED)
-                    VALUES ({msg.author.id}, 0, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (msg.author.id,))
         conn.commit()
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR IN DATA_msg.guild.id")
 
@@ -704,29 +703,29 @@ async def on_raw_reaction_remove(payload):
     if user_data is None:
         sql_query = f"""INSERT OR REPLACE INTO '{msg.guild.id}_{msg.author.id}'
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN)
-                    VALUES ({payload.user_id}, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (payload.user_id,))
         conn.commit()            
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR")
 
     # update author's data, now that it definitely exists
     sql_query = f"""
     UPDATE data_{payload.guild_id}
-    SET UPVOTES = UPVOTES - {upvoted},
-        DOWNVOTES = DOWNVOTES - {downvoted}
+    SET UPVOTES = UPVOTES - ?,
+        DOWNVOTES = DOWNVOTES - ?
     WHERE USER_ID = {msg.author.id}
     """
-    c.execute(sql_query)
+    c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
 
     sql_query = f"""
     UPDATE '{msg.guild.id}_{msg.author.id}'
-    SET UPVOTES = UPVOTES - {upvoted},
-        DOWNVOTES = DOWNVOTES - {downvoted}
+    SET UPVOTES = UPVOTES - ?,
+        DOWNVOTES = DOWNVOTES-+ ?
     WHERE USER_ID = {payload.user_id}
     """
-    c.execute(sql_query)
+    c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
 
     if debug_mode is True: print("DATA UPDATED FOR MSG AUTHOR")
@@ -739,44 +738,44 @@ async def on_raw_reaction_remove(payload):
     if user_data is None:   # from data_{guild.id}
         sql_query = f"""INSERT OR REPLACE INTO data_{msg.guild.id}
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN, BLACKLISTED)
-                    VALUES ({payload.user_id}, 0, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (payload.user_id,))
         conn.commit()
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR IN DATA_msg.guild.id")
 
-    sql_query = f"SELECT * FROM '{msg.guild.id}_{msg.author.id}' WHERE USER_ID = {payload.user_id}"
+    sql_query = f"SELECT * FROM '{msg.guild.id}_{payload.user_id}' WHERE USER_ID = {msg.author.id}"
     user_data = c.execute(sql_query).fetchone()
     if user_data is None:
         sql_query = f"""INSERT OR REPLACE INTO '{msg.guild.id}_{payload.user_id}'
                     (USER_ID, UPVOTES, DOWNVOTES, UPVOTES_GIVEN, DOWNVOTES_GIVEN)
-                    VALUES ({msg.author.id}, 0, 0, 0, 0
+                    VALUES (?, 0, 0, 0, 0
                     );"""
-        c.execute(sql_query)
+        c.execute(sql_query, (msg.author.id,))
         conn.commit()            
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR")
 
     # update reactor's data, now that it definitely exists
     sql_query = f"""
     UPDATE data_{msg.guild.id}
-    SET UPVOTES_GIVEN = UPVOTES_GIVEN - {upvoted},
-        DOWNVOTES_GIVEN = DOWNVOTES_GIVEN - {downvoted}
+    SET UPVOTES = UPVOTES - ?,
+        DOWNVOTES = DOWNVOTES - ?
     WHERE USER_ID = {payload.user_id}
     """
-    c.execute(sql_query)
-    conn.commit()
+    c.execute(sql_query, (upvoted, downvoted))
 
     sql_query = f"""
     UPDATE '{msg.guild.id}_{payload.user_id}'
-    SET UPVOTES_GIVEN = UPVOTES_GIVEN - {upvoted},
-        DOWNVOTES_GIVEN = DOWNVOTES_GIVEN - {downvoted}
-    WHERE USER_ID = {msg.author.id}
+    SET UPVOTES = UPVOTES - ?,
+        DOWNVOTES = DOWNVOTES - ?
+    WHERE USER_ID = {msg.author.id,}
     """
-    c.execute(sql_query)
+    c.execute(sql_query, (upvoted, downvoted))
     conn.commit()
-    if debug_mode is True: print("DATA UPDATED FOR MSG REACTOR")
 
     # debug
+    if debug_mode is True: print("DATA UPDATED FOR MSG REACTOR")
+
     if debug_mode is True:
         sql_query = f"SELECT * FROM data_{msg.guild.id} WHERE USER_ID = {msg.author.id}"
         user_data = c.execute(sql_query).fetchone()
