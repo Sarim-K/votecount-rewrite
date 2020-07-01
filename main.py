@@ -320,13 +320,14 @@ async def top_karma(ctx):
     else:
         return
 
-    user_data = sorted(user_data, key=operator.itemgetter(1))
-    user_data.reverse()
-
     for user in user_data:
         newlist.append([user[0], user[1]-user[2], user[1], user[2]]) # id, karma, upvotes, downvotes
 
-    for user in newlist:
+
+    user_data = sorted(newlist, key=operator.itemgetter(1))
+    user_data.reverse()
+
+    for user in user_data:
         if count == total:
             break
         
@@ -383,14 +384,13 @@ async def top_given(ctx):
     else:
         return
 
-
-    user_data = sorted(user_data, key=operator.itemgetter(1))
-    user_data.reverse()
-
     for user in user_data:
         newlist.append([user[0], user[1]-user[2], user[1], user[2]]) # id, karma, upvotes, downvotes
 
-    for user in newlist:
+    user_data = sorted(newlist, key=operator.itemgetter(1))
+    user_data.reverse()
+
+    for user in user_data:
         if count == total:
             break
         
