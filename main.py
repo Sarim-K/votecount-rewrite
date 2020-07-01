@@ -333,9 +333,9 @@ async def top_karma(ctx):
 
         try:
             user_object = ctx.message.guild.get_member(user[0])
-            finalstring += f"{user_object.name} - {user[2]}|{user[3]} ({user[1]})\n"
+            finalstring += f"{user[2]}|{user[3]} ({user[1]}) - {user_object.name}\n"
         except AttributeError:
-            finalstring += f"<@{user[0]}> - {user[2]}|{user[3]} ({user[1]})\n"
+            finalstring += f"{user[2]}|{user[3]} ({user[1]} - <@{user[0]}>)\n"
         finally:
             count += 1
 
@@ -383,7 +383,7 @@ async def top_given(ctx):
     user_data.reverse()
 
     for user in user_data:
-        newlist.append([user[0], user[1]-user[2], user[1], user[2]]) # id, karma, upvotes_given, downvotes_given
+        newlist.append([user[0], user[1]-user[2], user[1], user[2]]) # id, karma, upvotes, downvotes
 
     for user in newlist:
         if count == total:
@@ -394,13 +394,15 @@ async def top_given(ctx):
 
         try:
             user_object = ctx.message.guild.get_member(user[0])
-            finalstring += f"{user_object.name} - {user[2]}|{user[3]} ({user[1]})\n"
+            finalstring += f"{user[2]}|{user[3]} ({user[1]}) - {user_object.name}\n"
         except AttributeError:
-            finalstring += f"<@{user[0]}> - {user[2]}|{user[3]} ({user[1]})\n"
+            finalstring += f"{user[2]}|{user[3]} ({user[1]} - <@{user[0]}>)\n"
         finally:
             count += 1
 
-    finalstring += "```"
+    if len(finalstring) != 0:
+        finalstring = "```glsl\n" + finalstring
+        finalstring += "```"
 
     try:
         if total > 15:
@@ -432,17 +434,15 @@ async def on_raw_reaction_add(payload):
 
     sql_query = f"SELECT TIMELIMIT FROM settings_{payload.guild_id}"
     time_limit = c.execute(sql_query).fetchone()[0]
-    try:
-        if time_limit is None:
-            if debug_mode is True: print("No time limit.")
-            pass
-        elif current_time - message_time > time_limit:
-            if debug_mode is True: print("Exceeds time limit.")
-            return
-        else:
-            pass
-    except TypeError:
-        pass    # invalid timestamp
+    if time_limit != int:
+        if debug_mode is True: print("No time limit.")
+        pass
+    elif current_time - message_time > time_limit:
+        if debug_mode is True: print("Exceeds time limit.")
+        return
+    else:
+        if debug_mode is True: print("Passed time limit checks.")
+        pass
 
     # checks to see if it's a reaction on their own message
     if payload.user_id == msg.author.id:
@@ -621,17 +621,15 @@ async def on_raw_reaction_remove(payload):
 
     sql_query = f"SELECT TIMELIMIT FROM settings_{payload.guild_id}"
     time_limit = c.execute(sql_query).fetchone()[0]
-    try:
-        if time_limit is None:
-            if debug_mode is True: print("No time limit.")
-            pass
-        elif current_time - message_time > time_limit:
-            if debug_mode is True: print("Exceeds time limit.")
-            return
-        else:
-            pass
-    except TypeError:
-        pass    # invalid timestamp
+    if time_limit != int:
+        if debug_mode is True: print("No time limit.")
+        pass
+    elif current_time - message_time > time_limit:
+        if debug_mode is True: print("Exceeds time limit.")
+        return
+    else:
+        if debug_mode is True: print("Passed time limit checks.")
+        pass
 
     # checks to see if it's a reaction on their own message
     if payload.user_id == msg.author.id:
