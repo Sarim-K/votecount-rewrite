@@ -729,7 +729,7 @@ async def on_raw_reaction_remove(payload):
     sql_query = f"""
     UPDATE '{msg.guild.id}_{msg.author.id}'
     SET UPVOTES = UPVOTES - ?,
-        DOWNVOTES = DOWNVOTES-+ ?
+        DOWNVOTES = DOWNVOTES - ?
     WHERE USER_ID = {payload.user_id}
     """
     c.execute(sql_query, (upvoted, downvoted))
