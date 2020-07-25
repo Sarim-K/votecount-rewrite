@@ -335,10 +335,17 @@ async def top_karma(ctx):
             continue
 
         try:
+            ratio = f"1:{user[2]/user[3]}"
+        except ZeroDivisionError:
+            ratio = f"{user[2]}:0"
+        finally:
+            ratio = ratio[:8]
+
+        try:
             user_object = ctx.message.guild.get_member(user[0])
-            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name])
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name, ratio])
         except AttributeError:
-            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>"])            
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])            
         finally:
             count += 1
 
@@ -380,7 +387,7 @@ async def top_given(ctx):
     elif len(message_content.split(" ")) == 1:
         sql_query = f"SELECT USER_ID, UPVOTES_GIVEN, DOWNVOTES_GIVEN FROM data_{ctx.message.guild.id}"
         user_data = c.execute(sql_query).fetchall()
-
+  
     else:
         return
 
@@ -398,10 +405,17 @@ async def top_given(ctx):
             continue
 
         try:
+            ratio = f"1:{user[2]/user[3]}"
+        except ZeroDivisionError:
+            ratio = f"{user[2]}:0"
+        finally:
+            ratio = ratio[:8]
+
+        try:
             user_object = ctx.message.guild.get_member(user[0])
-            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name])
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name, ratio])
         except AttributeError:
-            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>"])            
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])          
         finally:
             count += 1
 
@@ -418,7 +432,6 @@ async def top_given(ctx):
             await ctx.message.channel.send(finalstring)
     except discord.HTTPException as e:
         await ctx.message.channel.send(f"`{e}`")
-
 
 
 @bot.event
