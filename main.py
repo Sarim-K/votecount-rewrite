@@ -5,6 +5,7 @@ from discord.ext import commands
 from karma_card.createcard import create_card
 import topcmds as top
 import onreaction as react
+import customise as cus
 import helpcmds
 import db
 
@@ -167,7 +168,6 @@ async def set_timelimit(ctx):
                 """
     db.c.execute(sql_query)
     db.conn.commit()  
-
     await ctx.message.channel.send(f"The bot will now only count reactions for messages that are {time_limit} seconds old or less.")
 
 
@@ -178,54 +178,30 @@ async def customise(ctx):
         template_name = ctx.message.content.split(" ")[2].lower()
         dark_light = ctx.message.content.split(" ")[3].lower()
 
-        if card_type != "karma" and card_type != "given":
-            await ctx.message.channel.send("Incorrect card type.")
-            return
-        elif dark_light != "dark" and dark_light != "light":
-            await ctx.message.channel.send("Incorrect colour type.")
-            return
+        try:
+            await ctx.message.channel.send(cus.validate(card_type, dark_light))
+        except Exception:
+            pass
+
     else:
-        embed = help_cmds.help("$help customise", ctx.message)
+        embed = helpcmds.help("$help customise", ctx.message)
         await ctx.message.channel.send(embed=embed)
         return
 
     sql_query = f"SELECT * FROM user_data WHERE USER_ID = {ctx.message.author.id}"
     user_data = db.c.execute(sql_query).fetchone()
 
-    if user_data is None:
+    if user_data is None:   # blacksea dark & space light are defaults
         if card_type == "karma":
-            sql_query = f"""INSERT OR REPLACE INTO user_data
-                        (USER_ID, KARMA_TEMPLATE, KARMA_COLOUR, GIVEN_TEMPLATE, GIVEN_COLOUR)
-                        VALUES ({ctx.message.author.id}, "{template_name}", "{dark_light}", "space", "light"
-                        );"""
-            db.c.execute(sql_query)
-            db.conn.commit()
-
+            cus.set_card_type(ctx.message.author.id, template_name, dark_light, "space", "light")
         elif card_type == "given":
-            sql_query = f"""INSERT OR REPLACE INTO user_data
-                        (USER_ID, KARMA_TEMPLATE, KARMA_COLOUR, GIVEN_TEMPLATE, GIVEN_COLOUR)
-                        VALUES ({ctx.message.author.id}, "blacksea", "dark", "{template_name}", "{dark_light}"
-                        );"""
-            db.c.execute(sql_query)
-            db.conn.commit()
+            cus.set_card_type(ctx.message.author.id, "blacksea", "dark", template_name, dark_light)
+    
     else:
         if card_type == "karma":
-            sql_query = f"""UPDATE user_data
-                        SET KARMA_TEMPLATE = "{template_name}",
-                            KARMA_COLOUR = "{dark_light}"
-                        WHERE USER_ID = {ctx.message.author.id}
-            """
-            db.c.execute(sql_query)
-            db.conn.commit()
-        
+            cus.update_card_type(ctx.message.author.id, template_name, dark_light, "KARMA")
         elif card_type == "given":
-            sql_query = f"""UPDATE user_data
-                        SET GIVEN_TEMPLATE = "{template_name}",
-                            GIVEN_COLOUR = "{dark_light}"
-                        WHERE USER_ID = {ctx.message.author.id}
-            """
-            db.c.execute(sql_query)
-            db.conn.commit()
+            cus.update_card_type(ctx.message.author.id, template_name, dark_light, "GIVEN")
 
     await ctx.message.channel.send(f"Your {card_type} card now has the '{template_name}' image with {dark_light} text.")
 
@@ -233,9 +209,9 @@ async def customise(ctx):
 @bot.command()
 async def help(ctx):
     try:
-        embed, img = help_cmds.help(ctx.message.content.lower(), ctx.message, img=None)
+        embed, img = helpcmds.help(ctx.message.content.lower(), ctx.message, img=None)
     except Exception:
-        embed = help_cmds.help(ctx.message.content.lower(), ctx.message, img=None)
+        embed = helpcmds.help(ctx.message.content.lower(), ctx.message, img=None)
         img = None
         
     if img is None:
@@ -304,8 +280,7 @@ async def top_karma(ctx):
     finalstring = ""
     count = 0
 
-    message_content = ctx.message.content
-    message_content, total = top.get_total_and_message(message_content)
+    message_content, total = top.get_total_and_message(str(ctx.message.content))
 
     try:
         guild_id = ctx.message.guild.id
@@ -350,8 +325,7 @@ async def top_given(ctx):
     finalstring = ""
     count = 0
 
-    message_content = ctx.message.content
-    message_content, total = top.get_total_and_message(message_content)
+    message_content, total = top.get_total_and_message(str(ctx.message.content))
 
     try:
         guild_id = ctx.message.guild.id
@@ -430,7 +404,7 @@ async def on_raw_reaction_add(payload):
             print("REACTOR DATA:", user_data)
 
     except Exception as e:
-        print(e.message, e.args)
+        if debug_mode is True: print(e.message, e.args)
         return
 
 
