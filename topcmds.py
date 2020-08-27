@@ -27,18 +27,21 @@ def get_user_data(message_content, guild_id, upvote_type, downvote_type):
     return user_data
 
 def get_ratio(upvotes, downvotes):
-    try:
-        ratio = downvotes/upvotes
-    except ZeroDivisionError:
-        ratio = upvotes
-    return ratio
+    if downvotes < 1:
+        return upvotes
+    elif upvotes < 1:
+        return 0
+    else:
+        return upvotes/downvotes
 
-def create_sorted_list(user_data):
+def create_sorted_list(user_data, top_bottom):
     newlist = []
     for user in user_data:
         newlist.append([user[0], user[1]-user[2], user[1], user[2]]) # id, karma, upvotes, downvotes
     user_data = sorted(newlist, key=operator.itemgetter(1))
-    user_data.reverse()
+
+    if top_bottom == "top":
+        user_data.reverse()
     return user_data
 
 def format_codeblock(finalstring):

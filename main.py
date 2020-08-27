@@ -167,7 +167,7 @@ async def set_timelimit(ctx):
                     SET TIMELIMIT = "{time_limit}"
                 """
     db.c.execute(sql_query)
-    db.conn.commit()  
+    db.conn.commit()
     await ctx.message.channel.send(f"The bot will now only count reactions for messages that are {time_limit} seconds old or less.")
 
 
@@ -196,7 +196,7 @@ async def customise(ctx):
             cus.set_card_type(ctx.message.author.id, template_name, dark_light, "space", "light")
         elif card_type == "given":
             cus.set_card_type(ctx.message.author.id, "blacksea", "dark", template_name, dark_light)
-    
+
     else:
         if card_type == "karma":
             cus.update_card_type(ctx.message.author.id, template_name, dark_light, "KARMA")
@@ -213,7 +213,7 @@ async def help(ctx):
     except Exception:
         embed = helpcmds.help(ctx.message.content.lower(), ctx.message, img=None)
         img = None
-        
+
     if img is None:
         await ctx.message.channel.send(embed=embed)
     else:
@@ -248,7 +248,7 @@ async def karma(ctx):
 
 
 @bot.command()
-async def given(ctx):   
+async def given(ctx):
     if len(ctx.message.content.split(" ")) == 1:
         user_id = ctx.message.author.id
         username = ctx.message.author.name
@@ -285,26 +285,71 @@ async def top_karma(ctx):
     try:
         guild_id = ctx.message.guild.id
         user_data = top.get_user_data(message_content, guild_id, "UPVOTES", "DOWNVOTES")
-    except Exception as e:       
+    except Exception as e:
         if debug_mode is True: print(e)
         return
 
-    user_data = top.create_sorted_list(user_data)
+    user_data = top.create_sorted_list(user_data, "top")
 
     for user in user_data:
         if count == total:
             break
-        
+
         if user[2] == 0 and user[3] == 0:
             continue
 
-        ratio = top.get_ratio(user[1], user[2])
+        ratio = top.get_ratio(user[2], user[3])
 
         try:
             user_object = ctx.message.guild.get_member(user[0])
             final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name, ratio])
         except AttributeError:
-            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])            
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])
+        finally:
+            count += 1
+
+    finalstring = top.format_codeblock(tabulate(final))
+
+    try:
+        if total > 15:
+            await ctx.message.author.send(finalstring)
+        else:
+            await ctx.message.channel.send(finalstring)
+    except discord.HTTPException as e:
+        await ctx.message.channel.send(f"`{e}`")
+
+
+@bot.command()
+async def bottom_karma(ctx):
+    final = []
+    finalstring = ""
+    count = 0
+
+    message_content, total = top.get_total_and_message(str(ctx.message.content))
+
+    try:
+        guild_id = ctx.message.guild.id
+        user_data = top.get_user_data(message_content, guild_id, "UPVOTES", "DOWNVOTES")
+    except Exception as e:
+        if debug_mode is True: print(e)
+        return
+
+    user_data = top.create_sorted_list(user_data, "bottom")
+
+    for user in user_data:
+        if count == total:
+            break
+
+        if user[2] == 0 and user[3] == 0:
+            continue
+
+        ratio = top.get_ratio(user[2], user[3])
+
+        try:
+            user_object = ctx.message.guild.get_member(user[0])
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name, ratio])
+        except AttributeError:
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])
         finally:
             count += 1
 
@@ -330,26 +375,71 @@ async def top_given(ctx):
     try:
         guild_id = ctx.message.guild.id
         user_data = top.get_user_data(message_content, guild_id, "UPVOTES_GIVEN", "DOWNVOTES_GIVEN")
-    except Exception as e:       
+    except Exception as e:
         if debug_mode is True: print(e)
         return
 
-    user_data = top.create_sorted_list(user_data)
+    user_data = top.create_sorted_list(user_data, "top")
 
     for user in user_data:
         if count == total:
             break
-        
+
         if user[2] == 0 and user[3] == 0:
             continue
 
-        ratio = top.get_ratio(user[1], user[2])
+        ratio = top.get_ratio(user[2], user[3])
 
         try:
             user_object = ctx.message.guild.get_member(user[0])
             final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name, ratio])
         except AttributeError:
-            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])            
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])
+        finally:
+            count += 1
+
+    finalstring = top.format_codeblock(tabulate(final))
+
+    try:
+        if total > 15:
+            await ctx.message.author.send(finalstring)
+        else:
+            await ctx.message.channel.send(finalstring)
+    except discord.HTTPException as e:
+        await ctx.message.channel.send(f"`{e}`")
+
+
+@bot.command()
+async def bottom_given(ctx):
+    final = []
+    finalstring = ""
+    count = 0
+
+    message_content, total = top.get_total_and_message(str(ctx.message.content))
+
+    try:
+        guild_id = ctx.message.guild.id
+        user_data = top.get_user_data(message_content, guild_id, "UPVOTES_GIVEN", "DOWNVOTES_GIVEN")
+    except Exception as e:
+        if debug_mode is True: print(e)
+        return
+
+    user_data = top.create_sorted_list(user_data, "bottom")
+
+    for user in user_data:
+        if count == total:
+            break
+
+        if user[2] == 0 and user[3] == 0:
+            continue
+
+        ratio = top.get_ratio(user[2], user[3])
+
+        try:
+            user_object = ctx.message.guild.get_member(user[0])
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", user_object.name, ratio])
+        except AttributeError:
+            final.append([f"{user[2]}|{user[3]}", f"({user[1]})", f"<@{user[0]}>", ratio])
         finally:
             count += 1
 
@@ -376,7 +466,7 @@ async def on_raw_reaction_add(payload):
         if debug_mode is True: print(f"Unknown error.\n{e}")
         return
     if debug_mode is True: print("Message fetched.")
-    
+
     try:
         react.check_time(msg, payload, debug_mode)
         react.check_self_react(payload, msg, debug_mode)
@@ -420,7 +510,7 @@ async def on_raw_reaction_remove(payload):
         if debug_mode is True: print(f"Unknown error.\n{e}")
         return
     if debug_mode is True: print("Message fetched.")
-    
+
     try:
         react.check_time(msg, payload, debug_mode)
         react.check_self_react(payload, msg, debug_mode)
@@ -450,5 +540,6 @@ async def on_raw_reaction_remove(payload):
     except Exception as e:
         print(e.message, e.args)
         return
+
 
 bot.run(KEY)
