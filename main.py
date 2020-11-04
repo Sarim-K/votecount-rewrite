@@ -18,7 +18,8 @@ import datetime
 KEY = open("keys.txt", "r").readline().split("=")[1]
 
 debug_mode = False
-bot = commands.Bot(command_prefix="$")
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix="$", intents=intents)
 bot.remove_command("help")
 
 conn = sqlite3.connect("votecount.db")
