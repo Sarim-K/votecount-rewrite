@@ -71,7 +71,6 @@ def create_tables_if_not_exist(msg, payload):
     DOWNVOTES_GIVEN  INTEGER    (1, 100)
     );"""
     db.c.execute(sql_query)
-    db.conn.commit()
 
     sql_query = f"""
     CREATE TABLE IF NOT EXISTS '{msg.guild.id}_{payload.user_id}' (
@@ -92,7 +91,6 @@ def create_entry_if_not_exist(user_data, msg, payload, debug_mode):
                     VALUES (?, 0, 0, 0, 0, 0
                     );"""
         db.c.execute(sql_query, (msg.author.id,))
-        db.conn.commit()
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR IN DATA_msg.guild.id")
 
     sql_query = f"SELECT * FROM '{msg.guild.id}_{msg.author.id}' WHERE USER_ID = {payload.user_id}"
@@ -103,7 +101,7 @@ def create_entry_if_not_exist(user_data, msg, payload, debug_mode):
                     VALUES (?, 0, 0, 0, 0
                     );"""
         db.c.execute(sql_query, (payload.user_id,))
-        db.conn.commit()            
+        db.conn.commit()
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR")
 
 def update_author_data(upvoted, downvoted, payload, msg, add_or_remove, debug_mode):
@@ -115,7 +113,6 @@ def update_author_data(upvoted, downvoted, payload, msg, add_or_remove, debug_mo
     WHERE USER_ID = {msg.author.id}
     """
     db.c.execute(sql_query, (upvoted, downvoted))
-    db.conn.commit()
 
     sql_query = f"""
     UPDATE '{msg.guild.id}_{msg.author.id}'
@@ -124,7 +121,6 @@ def update_author_data(upvoted, downvoted, payload, msg, add_or_remove, debug_mo
     WHERE USER_ID = {payload.user_id}
     """
     db.c.execute(sql_query, (upvoted, downvoted))
-    db.conn.commit()
 
     if debug_mode is True: print("DATA UPDATED FOR MSG AUTHOR")
 
@@ -144,7 +140,6 @@ def create_reactor_entry_if_not_exist(user_data, msg, payload, debug_mode):
                     VALUES (?, 0, 0, 0, 0, 0
                     );"""
         db.c.execute(sql_query, (payload.user_id,))
-        db.conn.commit()
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR IN DATA_msg.guild.id")
 
     sql_query = f"SELECT * FROM '{msg.guild.id}_{payload.user_id}' WHERE USER_ID = {msg.author.id}"
@@ -155,7 +150,6 @@ def create_reactor_entry_if_not_exist(user_data, msg, payload, debug_mode):
                     VALUES (?, 0, 0, 0, 0
                     );"""
         db.c.execute(sql_query, (msg.author.id,))
-        db.conn.commit()            
         if debug_mode is True: print("EMPTY SPOT ADDED FOR MSG AUTHOR")
 
 def update_reactor_data(upvoted, downvoted, payload, msg, add_or_remove, debug_mode):
@@ -175,4 +169,6 @@ def update_reactor_data(upvoted, downvoted, payload, msg, add_or_remove, debug_m
     WHERE USER_ID = {msg.author.id}
     """
     db.c.execute(sql_query, (upvoted, downvoted))
+
+def commit():
     db.conn.commit()
