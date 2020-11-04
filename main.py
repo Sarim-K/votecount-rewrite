@@ -482,6 +482,7 @@ async def on_raw_reaction_add(payload):
         user_data = react.get_reactor_data(msg, payload, debug_mode)
         react.create_reactor_entry_if_not_exist(user_data, msg, payload, debug_mode)
         react.update_reactor_data(upvoted, downvoted, payload, msg, "+", debug_mode)
+        react.commit()
 
         # debug
         if debug_mode is True:
@@ -526,6 +527,7 @@ async def on_raw_reaction_remove(payload):
         user_data = react.get_reactor_data(msg, payload, debug_mode)
         react.create_reactor_entry_if_not_exist(user_data, msg, payload, debug_mode)
         react.update_reactor_data(upvoted, downvoted, payload, msg, "-", debug_mode)
+        react.commit()
 
         # debug
         if debug_mode is True:
