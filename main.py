@@ -9,18 +9,25 @@ import customise as cus
 import helpcmds
 import db
 
+
 from tabulate import tabulate
+from imgurpython import ImgurClient as imgur
 
 import sqlite3
 import operator
 import datetime
 
-KEY = open("keys.txt", "r").readline().split("=")[1]
+with open("keys.txt", "r") as f:
+    KEY = f.readline().split("=")[1].strip()
+    CLIENT_ID = f.readline().split("=")[1].strip()
+    CLIENT_SECRET = f.readline().split("=")[1].strip()
 
 debug_mode = False
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="$", intents=intents)
 bot.remove_command("help")
+
+imgur_client = imgur(CLIENT_ID, CLIENT_SECRET)
 
 conn = sqlite3.connect("votecount.db")
 c = db.conn.cursor()
@@ -40,6 +47,7 @@ db.c.execute(sql_query)
 @bot.event
 async def on_ready():
     print(f"logged in as {bot.user}")
+    await bot.change_presence(activity=discord.Activity(name="cock hero battle royale", type=5))
 
 
 @bot.event
@@ -244,7 +252,7 @@ async def karma(ctx):
     if user_data is None:
         user_data = [0, 0, 0]
 
-    create_card(user_data[1], user_data[2], username, avatar, karma_template, karma_colour)
+    create_card(user_data[1], user_data[2], username, avatar, karma_template, karma_colour, "FpmGsQR", imgur_client)
     await ctx.message.channel.send(file=discord.File("card.png"))
 
 
@@ -271,7 +279,7 @@ async def given(ctx):
     if user_data is None:
         user_data = [0, 0, 0, 0, 0]
 
-    create_card(user_data[3], user_data[4], username, avatar, given_template, given_colour)
+    create_card(user_data[3], user_data[4], username, avatar, given_template, given_colour, "FpmGsQR", imgur_client)
     await ctx.message.channel.send(file=discord.File("card.png"))
 
 

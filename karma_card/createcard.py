@@ -1,7 +1,14 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
 import requests
 
-def create_card(upvotes, downvotes, name, avatar, template, colour):
+def get_image_data(album_id, imgur_client):
+    final = {}
+    album = imgur_client.get_album(album_id)
+    for image in album.images:
+        final[image["description"]] = image["link"]
+    return final
+
+def create_card(upvotes, downvotes, name, avatar, template, colour, album_id, imgur_client):
     upvotes, downvotes = int(upvotes), int(downvotes)
     if colour == "light":
         textcolour = "#cecece"
@@ -20,10 +27,12 @@ def create_card(upvotes, downvotes, name, avatar, template, colour):
 
     canvas = Image.new('RGBA', (700, 250), (0, 0, 0, 0))
     mask = Image.open("karma_card/mask.png")
+
+    templates = get_image_data(album_id, imgur_client)
     try:
-        template = Image.open(f"karma_card/templates/{template}_template.png").convert("RGBA")
-    except FileNotFoundError:
-        template = Image.open(f"karma_card/templates/rocky_template.png").convert("RGBA")
+        template = Image.open(requests.get(templates[template], stream=True).raw)
+    except (UnidentifiedImageError, KeyError):
+        template = Image.open(requests.get(templates["rocky"], stream=True).raw)
 
     try:
         img = Image.open(requests.get(avatar, stream=True).raw)
