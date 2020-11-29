@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
+from PIL import Image, ImageDraw, ImageFont
 import requests
 
 def get_image_data(album_id, imgur_client):
@@ -31,7 +31,7 @@ def create_card(upvotes, downvotes, name, avatar, template, colour, album_id, im
     templates = get_image_data(album_id, imgur_client)
     try:
         template = Image.open(requests.get(templates[template], stream=True).raw)
-    except (UnidentifiedImageError, KeyError):
+    except Exception:
         template = Image.open(requests.get(templates["rocky"], stream=True).raw)
 
     try:
